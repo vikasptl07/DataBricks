@@ -48,6 +48,10 @@ print("Defined view 'loans_delta'")
 
 # COMMAND ----------
 
+# MAGIC %fs ls /tmp/loans_delta
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC Let's explore the data.
 
@@ -165,7 +169,7 @@ loanUpdates = (spark
 # COMMAND ----------
 
 # Uncomment the line below and it will error
-# loanUpdates.write.format("delta").mode("append").save(deltaPath)
+loanUpdates.write.format("delta").mode("append").save(deltaPath)
 
 # COMMAND ----------
 
@@ -362,7 +366,8 @@ items = [
   (-100, 1000, 10.0, 'NY', False)
 ]
 
-historicalUpdates = spark.createDataFrame(items, cols)
+historicalUpdates = spark.createDataFrame(items, cols).createOrReplaceTempView('historicalUpdates')
+
 
 # COMMAND ----------
 
@@ -377,7 +382,8 @@ deltaTable = DeltaTable.forPath(spark, deltaPath)
 
 (deltaTable
   .alias("t")
-  .merge(historicalUpdates.alias("s"), "t.loan_id = s.loan_id") 
+  .merge(historicalUpdates.alias("s"), "t.loan_id = s.loan_id")
+ 
   .whenNotMatchedInsertAll() 
   .execute())
 
@@ -389,6 +395,16 @@ deltaTable = DeltaTable.forPath(spark, deltaPath)
 # COMMAND ----------
 
 spark.sql("select * from loans_delta where addr_state = 'NY' and loan_id < 30").show()
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from loans_delta where loan_id=11
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE loans_delta AS D SET addr_state='test' WHERE exists ( select * FROM historicalUpdates AS H WHERE D.loan_id=H.loan_id)
 
 # COMMAND ----------
 
