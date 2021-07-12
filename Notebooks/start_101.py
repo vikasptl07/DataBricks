@@ -3,13 +3,23 @@ k=dbutils.secrets.get(scope = "DevScope", key = "DevKey")
 
 # COMMAND ----------
 
+#accountkey
 dbutils.fs.mount(
-source = "wasbs://dev@vikasdevgen2.blob.core.windows.net",
+source = "wasbs://test@vikasdev.blob.core.windows.net",
 mount_point = "/mnt/dev",
-extra_configs = {"fs.azure.account.key.vikasdevgen2.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "storagegen2")})
+extra_configs = {"fs.azure.account.key.vikasdev.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "key")})
 
 # COMMAND ----------
 
+##sas token
+dbutils.fs.mount(
+source = "wasbs://test@vikasdev.blob.core.windows.net",
+mount_point = "/mnt/dev",
+extra_configs = {"fs.azure.sas.test.vikasdev.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "sas")})
+
+# COMMAND ----------
+
+##serviceprincipal
 configs = {"fs.azure.account.auth.type": "OAuth",
        "fs.azure.account.oauth.provider.type": "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
        "fs.azure.account.oauth2.client.id": "6bb15485-2745-45a0-b693-7a939b3146b4",
@@ -37,15 +47,30 @@ r.write.text(path='/mnt/dev/README.txt')
 
 # COMMAND ----------
 
-df=spark.read.csv(path='dbfs:/mnt/dev/Test/data.txt',sep='\t',inferSchema=True,header=True)
+df=spark.read.csv(path='dbfs:/mnt/dev/test/Employee.txt',sep='\t',inferSchema=True,header=True)
 
 # COMMAND ----------
 
-display(df)
+#df=df.drop('_c6')
+#df.columns
+df.show()
 
 # COMMAND ----------
 
-df.createOrReplaceTempView('data')
+from pyspark.sql.functions import *
+
+"""
+df.withColumn('salary_desc',when(col('salary') <= 90000,'low').when(col('salary') > 90000 & col('salary') <200000   ,'Medium').when(col('salary') >200000,'high').otherwise(lit(""))).show()
+"""
+
+df.select(col("*"),when(col('salary') <= 90000,'low')\
+          .when((col('salary') > 90000 ) & (col('salary') < 200000 ),'M')\
+         .when(col('salary')>=200000,'h').alias('temp'),regexp_replace(col('department'),'HR','H')).show()
+
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
