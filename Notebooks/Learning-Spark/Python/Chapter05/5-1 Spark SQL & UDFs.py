@@ -1,5 +1,4 @@
 # Databricks notebook source
-# MAGIC 
 # MAGIC %md
 # MAGIC ## Chapter 5: Spark SQL and DataFrames: Interacting with External Data Sources
 # MAGIC This notebook contains for code samples for *Chapter 5: Spark SQL and DataFrames: Interacting with External Data Sources*.
@@ -19,14 +18,20 @@ def cubed(s):
   return s * s * s
 
 # Register UDF
-spark.udf.register("cubed", cubed, LongType())
+#spark.udf.register("cubed", cubed, LongType())
+cubed=udf(cubed,LongType())
 
 # Generate temporary view
 spark.range(1, 9).createOrReplaceTempView("udf_test")
 
 # COMMAND ----------
 
-spark.sql("SELECT id, cubed(id) AS id_cubed FROM udf_test").show()
+#spark.sql("SELECT id, cubed(id) AS id_cubed FROM udf_test").show()
+from pyspark.sql.functions import *
+test=spark.range(1,10)
+#test.select(collect_list('id').alias('id_list')).show()
+test.filter(expr('id in (5,6)')).select(max('id')).show()
+#df.show()
 
 # COMMAND ----------
 
@@ -106,19 +111,20 @@ df.show()
 
 # COMMAND ----------
 
-# Create an array dataset
-arrayData = [[1, (1, 2, 3)], [2, (2, 3, 4)], [3, (3, 4, 5)]]
-
-# Create schema
-from pyspark.sql.types import *
-arraySchema = (StructType([
-      StructField("id", IntegerType(), True), 
-      StructField("values", ArrayType(IntegerType()), True)
-      ]))
-
-# Create DataFrame
-df1 = spark.createDataFrame(arrayData, arraySchema)
-df1.show()
+# MAGIC %md
+# MAGIC # Create an array dataset
+# MAGIC arrayData = [[1, (1, 2, 3)], [2, (2, 3, 4)], [3, (3, 4, 5)]]
+# MAGIC 
+# MAGIC # Create schema
+# MAGIC from pyspark.sql.types import *
+# MAGIC arraySchema = (StructType([
+# MAGIC       StructField("id", IntegerType(), True), 
+# MAGIC       StructField("values", ArrayType(IntegerType()), True)
+# MAGIC       ]))
+# MAGIC 
+# MAGIC # Create DataFrame
+# MAGIC df1 = spark.createDataFrame(arrayData, arraySchema)
+# MAGIC df1.show()
 
 # COMMAND ----------
 
@@ -460,6 +466,8 @@ spark.sql("""SELECT *, CASE WHEN delay <= 10 THEN 'On-time' ELSE 'Delayed' END A
 
 foo3 = foo2.drop("delay")
 foo3.show()
+
+
 
 # COMMAND ----------
 

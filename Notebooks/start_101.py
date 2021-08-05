@@ -1,5 +1,5 @@
 # Databricks notebook source
-k=dbutils.secrets.get(scope = "DevScope", key = "DevKey")
+dbutils.secrets.listScopes()
 
 # COMMAND ----------
 
@@ -8,6 +8,28 @@ dbutils.fs.mount(
 source = "wasbs://test@vikasdev.blob.core.windows.net",
 mount_point = "/mnt/dev",
 extra_configs = {"fs.azure.account.key.vikasdev.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "key")})
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC dbutils.fs.mount(
+# MAGIC source="wasbs://test@vikasdev.blob.core.windows.net"  ,
+# MAGIC mount_point='/mnt/dev/',
+# MAGIC extra_configs={"fs.azure.account.key.vikasdev.blob.core.windows.net":dbutils.secrets.get('DevScope',key='')}  
+# MAGIC 
+# MAGIC )
+# MAGIC jdbc:sqlserver://{}:{};database;user;password
+# MAGIC       
+# MAGIC dbutils.fs.mount(
+# MAGIC source="wasbs://test@vikasdev.blob.core.windows.net",
+# MAGIC   mount_point="",
+# MAGIC   extra_configs={"fs.azure.account.key.vikasdev.blob.core.windows.net":}
+# MAGIC 
+# MAGIC )      
+# MAGIC       
+# MAGIC       
+# MAGIC       
+# MAGIC       
 
 # COMMAND ----------
 
@@ -34,8 +56,11 @@ extra_configs = configs)
 
 # COMMAND ----------
 
+#%fs ls '/mnt/'
 #dbutils.fs.unmount('/mnt/dev')
-dbutils.fs.ls("/databricks-datasets/airlines/")
+#dbutils.fs.ls("/databricks-datasets/airlines/")
+
+
 
 # COMMAND ----------
 
@@ -43,17 +68,24 @@ r=spark.read.text('dbfs:/databricks-datasets/airlines/README.md')
 
 # COMMAND ----------
 
-r.write.text(path='/mnt/dev/README.txt')
+df=spark.read.format('csv').options(path='dbfs:/mnt/dev/test/Employee.txt',sep='\t',inferSchema=True,header=True).load()
 
 # COMMAND ----------
 
-df=spark.read.csv(path='dbfs:/mnt/dev/test/Employee.txt',sep='\t',inferSchema=True,header=True)
-
-# COMMAND ----------
-
-#df=df.drop('_c6')
-#df.columns
+#df=spark.read.csv(path='dbfs:/mnt/dev/test/Employee.txt',sep='\t',inferSchema=True,header=True)
 df.show()
+
+# COMMAND ----------
+
+df.write.format('csv').options(path='dbfs:/mnt/dev/test/Employee1.txt',sep='\t',header=True).mode('overwrite').save()
+
+# COMMAND ----------
+
+df=spark.read.csv(path='/mnt/dev/test/Employee1.txt',sep='\t',header=True,inferSchema=True)
+
+# COMMAND ----------
+
+df.fillna({'_c6':'test'}).show()
 
 # COMMAND ----------
 
@@ -70,6 +102,7 @@ df.select(col("*"),when(col('salary') <= 90000,'low')\
 
 # COMMAND ----------
 
+df.dtypes
 
 
 # COMMAND ----------
@@ -91,8 +124,8 @@ df.groupBy().sum('amount').alias('t').show()
 
 # COMMAND ----------
 
-
-df2=df.groupBy().agg(sum("amount"),avg("amount")).select(col("sum(amount)"),col("avg(amount)")).withColumnRenamed('sum(amount)','total').withColumnRenamed('avg(amount)','totalavg')
+from pyspark.sql.functions import *
+df.groupBy().agg(sum('salary').alias('s'),avg('salary').alias('avg')).show()
 
 # COMMAND ----------
 
@@ -143,4 +176,25 @@ spark.catalog.listTables()
 
 # COMMAND ----------
 
+dbutils.notebook.run('demo-etl-notebook',10000,{"colName":"Vikas"})
 
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+from pyspark.sql import Row
+df=spark.createDataFrame(spark.sparkContext.parallelize([Row(1)]),'Id int')
+
+# COMMAND ----------
+
+df.select(month(current_date())).show()
+
+# COMMAND ----------
+
+from pyspark.sql.window import Window
+
+# COMMAND ----------
+
+Window.partitionBy()
