@@ -85,7 +85,28 @@ df=spark.read.csv(path='/mnt/dev/test/Employee1.txt',sep='\t',header=True,inferS
 
 # COMMAND ----------
 
-df.fillna({'_c6':'test'}).show()
+#df.fillna({'_c6':'test'}).show()
+df.show()
+
+# COMMAND ----------
+
+# MAGIC %pip install random
+
+# COMMAND ----------
+
+import random
+from pyspark.sql.functions import *
+from pyspark.sql.types import *
+from pyspark.sql.window import Window
+def arraylist(cl):
+  return cl+'_'+str(random.randint(1,10))
+#print(arraylist1('test'))
+arraylist1=udf(arraylist,StringType())
+df.withColumn('tile',arraylist1('department')).show()
+
+# COMMAND ----------
+
+df.withColumn('tile',arraylist1('department')).show()
 
 # COMMAND ----------
 

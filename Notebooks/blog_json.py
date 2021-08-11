@@ -98,14 +98,20 @@ iot1= spark.read.jdbc(jdbcUrl,table=table_name)
 
 # COMMAND ----------
 
-"jdbc:sqlserver://{}:{};database{3};user={4};password={4}".format(server,port,username,password)
-"jdbc:sqlserver://{0}:{1};database={2};user={3};password={4}"
-"jdbc:sqlserver://{0}:{1};database={};user={};password={}"
-
+# MAGIC %md
+# MAGIC "jdbc:sqlserver://{}:{};database{3};user={4};password={4}".format(server,port,username,password)
+# MAGIC "jdbc:sqlserver://{0}:{1};database={2};user={3};password={4}"
+# MAGIC "jdbc:sqlserver://{0}:{1};database={};user={};password={}"
 
 # COMMAND ----------
 
-# MAGIC %fs ls '/iot/parqet/'
+display(iot1)
+
+# COMMAND ----------
+
+df=spark.read.format('jdbc').option("url",jdbcUrl).option('query',"delete from iot where device_id='157737' ").load()
+iot1= spark.read.jdbc(jdbcUrl,table=table_name)
+display(iot1)
 
 # COMMAND ----------
 
