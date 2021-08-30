@@ -5,9 +5,9 @@ dbutils.secrets.listScopes()
 
 #accountkey
 dbutils.fs.mount(
-source = "wasbs://test@vikasdev.blob.core.windows.net",
+source = "wasbs://test@skywalkerdevstg.blob.core.windows.net",
 mount_point = "/mnt/dev",
-extra_configs = {"fs.azure.account.key.vikasdev.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "key")})
+extra_configs = {"fs.azure.account.key.skywalkerdevstg.blob.core.windows.net":dbutils.secrets.get(scope = "DevScope", key = "dev")})
 
 # COMMAND ----------
 
