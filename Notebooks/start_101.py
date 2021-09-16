@@ -11,6 +11,14 @@ extra_configs = {"fs.azure.account.key.skywalkerdevstg.blob.core.windows.net":db
 
 # COMMAND ----------
 
+#accountkey
+dbutils.fs.mount(
+source = "wasbs://test@skywalkerdevstg.blob.core.windows.net",
+mount_point = "/mnt/dev",
+extra_configs = {"fs.azure.account.key.skywalkerdevstg.blob.core.windows.net":'VMmmfnFYcD3v1NjLdJ5l58zn4FrLwNu4Xl5LrjlrSrzEYveoe8EI1bxzedsD9iY1HEPMqLBeqWNf9BesAUTAKQ=='})
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC dbutils.fs.mount(
 # MAGIC source="wasbs://test@vikasdev.blob.core.windows.net"  ,
@@ -218,4 +226,87 @@ from pyspark.sql.window import Window
 
 # COMMAND ----------
 
-Window.partitionBy()
+sample=list(range(1000))
+
+# COMMAND ----------
+
+from pyspark.sql import Row
+sample2=spark.sparkContext.parallelize(sample).map(lambda x: Row(x))
+df2=sample2.toDF(schema="id int")
+df2.filter('id>=100 and id<=999').groupBy().sum('id').show()
+
+# COMMAND ----------
+
+sum=0
+for i in sample:
+  if(i>=100 and i<=999):
+    sum=sum+i
+print(sum)    
+
+# COMMAND ----------
+
+rdd2=rdd.filter(lambda x:x>=100 and x<=999).map(lambda x: (x,1))
+
+# COMMAND ----------
+
+demo=[("Joseph", "Maths", 83), ("Joseph", "Physics", 74), ("Joseph", "Chemistry", 91), ("Joseph", "Biology", 82), 
+  ("Jimmy", "Maths", 69), ("Jimmy", "Physics", 62), ("Jimmy", "Chemistry", 97), ("Jimmy", "Biology", 80), 
+  ("Tina", "Maths", 78), ("Tina", "Physics", 73), ("Tina", "Chemistry", 68), ("Tina", "Biology", 87), 
+  ("Thomas", "Maths", 87), ("Thomas", "Physics", 93), ("Thomas", "Chemistry", 91), ("Thomas", "Biology", 74), 
+  ("Cory", "Maths", 56), ("Cory", "Physics", 65), ("Cory", "Chemistry", 71), ("Cory", "Biology", 68), 
+  ("Jackeline", "Maths", 86), ("Jackeline", "Physics", 62), ("Jackeline", "Chemistry", 75), ("Jackeline", "Biology", 83), 
+  ("Juan", "Maths", 63), ("Juan", "Physics", 69), ("Juan", "Chemistry", 64), ("Juan", "Biology", 60)]
+
+df=spark.createDataFrame(demo,"Name string,Subject string,Marks int")
+df.show()
+
+# COMMAND ----------
+
+from pyspark.sql.functions import *
+from pyspark.sql
+
+# COMMAND ----------
+
+df.groupBy(col('Name')).agg(max('marks').alias('max_val')).show()
+
+# COMMAND ----------
+
+dbutils.widgets.dropdown("X123", "1", [str(x) for x in range(1, 10)])
+
+# COMMAND ----------
+
+dbutils.widgets.get("X123")
+
+# COMMAND ----------
+
+# MAGIC %fs ls /mnt/dev/
+
+# COMMAND ----------
+
+# MAGIC %pip install pyyaml
+
+# COMMAND ----------
+
+import yaml
+with open('/dbfs/mnt/dev/sample.yaml','r') as f:
+  data = yaml.load(f, Loader=yaml.SafeLoader)
+print(data)
+d="""Config:
+    - name: identity
+      value: 101
+    - name: size
+      value: 201
+    - name: logloc
+      value: /tmp/log
+    - name: host
+      value: xyz.dev.cloud"""
+data2=yaml.load(d,Loader=yaml.SafeLoader)
+print(data2)
+template = "UPDATE SAMPLE SET PVALUE={} WHERE PNAME={}"
+statements = [template.format(nv['value'], nv['name']) for nv in data['Config']]
+
+print(statements)
+
+# COMMAND ----------
+
+
